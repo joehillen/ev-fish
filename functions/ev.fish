@@ -56,8 +56,10 @@ function ev -d 'Load environment variables from directory'
       set -l d "$EV_DIR/$dname"
       if test -d "$d"
         for fn in (ls -1 $d)
-          set -gx "$fn" (cat "$d/$fn")
-          echo "$fn"
+          if test -f "$fn"
+            set -gx "$fn" (cat "$d/$fn")
+            echo "$fn"
+          end
         end
       else
         echo "$d not found."
