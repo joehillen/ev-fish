@@ -5,4 +5,4 @@ all:
 
 uninstall:
 	rm -f ~/.config/fish/functions/ev.fish
-	rm -f ~/.config/fish/completions/.fish
+	rm -f ~/.config/fish/completions/ev.fish
