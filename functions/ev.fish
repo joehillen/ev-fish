@@ -56,7 +56,7 @@ function ev -d 'Load environment variables from directory'
       set -l d "$EV_DIR/$dname"
       if test -d "$d"
         for fn in (ls -1 $d)
-          if test -f "$fn"
+          if test -f "$d/$fn"
             set -gx "$fn" (cat "$d/$fn")
             echo "$fn"
           end
