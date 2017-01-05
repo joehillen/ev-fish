@@ -24,11 +24,12 @@ or run `make`
 ## Usage
 
 By default, `ev` looks for environment variable directories in `~/.config/env`,
-set `EV_DIR` to change this.
+set `EVPATH` to change this. `EVPATH` can be a list of directories.
 
 ```
 Usage:
- ev DIR           # Load environment variables
- ev -u DIR        # Unload environment variables
+ ev DIR           # Load all environment variables from DIR
+ ev FILE          # Load a single environment variable from a FILE
+ ev -u DIR        # Unload all environment variables from DIR
  ev (-h | --help) # Show this message
 ```
