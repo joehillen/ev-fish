@@ -28,21 +28,28 @@ function __ev_update_completions
 end
 
 function __ev_load_path
-  set -l path "$argv[1]"
-  if test -d "$path"
-      for fn in (ls -1 $path)
-          if test -f "$path/$fn"
-              echo $fn
-              set -gx "$fn" (cat "$path/$fn")
-          end
-      end
-      return 0
-  else if test -f "$path"
-      echo (basename $path)
-      set -gx (basename $path) (cat "$path")
-      return 0
-  end
-  return 1
+    set -l path "$argv[1]"
+    if test -d "$path"
+        for fn in (ls -1 $path)
+            set -l f "$path/$fn"
+            if test -x "$f"
+                set -gx "$fn" (eval $f)
+            else if test -f "$f"
+                echo $fn
+                set -gx "$fn" (cat "$f")
+            end
+        end
+        return 0
+    else if test -f "$path"
+        echo (basename $path)
+        if test -x "$path"
+            set -gx (basename $path) (eval $path)
+        else
+            set -gx (basename $path) (cat "$path")
+        end
+        return 0
+    end
+    return 1
 end
 
 function ev -d 'Load environment variables from directory'
@@ -69,25 +76,25 @@ function ev -d 'Load environment variables from directory'
     case -u
       set -l dname "$argv[2]"
       for evdir in $EVPATH
-        set -l d "$evdir/$dname"
-        if test -d "$d"
-          for fn in (ls -1 $d)
-            echo $fn
-            set -e "$fn"
+          set -l d "$evdir/$dname"
+          if test -d "$d"
+              for fn in (ls -1 $d)
+                  echo $fn
+                  set -e "$fn"
+              end
+              break
           end
-          break
-        end
       end
 
 
     case '*'
       set -l name "$argv[1]"
       for evdir in $EVPATH
-        set -l path "$evdir/$name"
-        __ev_load_path "$path"
-        if test $status -eq 0
-            return 0
-        end
+          set -l path "$evdir/$name"
+          __ev_load_path "$path"
+          if test $status -eq 0
+              return 0
+          end
       end
       __ev_load_path "$name"
       if test $status -eq 0

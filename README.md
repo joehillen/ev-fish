@@ -37,6 +37,19 @@ $ env | grep VAULT_AUTH
 BAR=bar
 ```
 
+If a file is executable, `ev` will run the file to retrieve the environment variables.
+
+```
+$ echo -e '#!/bin/sh\ncurl -s ifconfig.co' > IP
+$ chmod +x IP
+$ ./IP
+8.8.8.8
+$ env | grep IP
+$ ev ./IP
+IP
+$ env | grep IP
+IP=8.8.8.8
+```
 
 ## Installation
 
