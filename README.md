@@ -1,6 +1,6 @@
 # ev-fish
 
-`envdir` for fish shell
+[envdir](https://cr.yp.to/daemontools/envdir.html) for fish shell
 
 Load environment variables from directories and files.
 
