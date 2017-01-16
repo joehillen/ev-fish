@@ -33,7 +33,7 @@ FOO
 BAR
 $ env | grep FOO
 FOO=foo123
-$ env | grep VAULT_AUTH
+$ env | grep BAR
 BAR=bar
 ```
 
