@@ -31,13 +31,7 @@ function __ev_load_path
     set -l path "$argv[1]"
     if test -d "$path"
         for fn in (ls -1 $path)
-            set -l f "$path/$fn"
-            if test -x "$f"
-                set -gx "$fn" (eval $f)
-            else if test -f "$f"
-                echo $fn
-                set -gx "$fn" (cat "$f")
-            end
+            __ev_load_path "$path/$fn"
         end
         return 0
     else if test -f "$path"
