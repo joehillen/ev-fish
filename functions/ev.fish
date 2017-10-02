@@ -17,9 +17,9 @@ function __ev_update_completions
   complete -c ev -n '__fish_use_subcommand' -r -a '-u' -d 'Unset environment variables'
   for evdir in $EVPATH
     if test -d "$evdir"
-      for d in (ls -1d $evdir/*)
+      for d in (command ls -1d $evdir/*)
         complete -c ev -n 'test -d' -r -a (basename "$d")
-        for f in (ls -1 $d)
+        for f in (command ls -1 $d)
             complete -c ev -n 'test -f' -r -a "(basename $d)/$f"
         end
       end
@@ -30,7 +30,7 @@ end
 function __ev_load_path
     set -l path "$argv[1]"
     if test -d "$path"
-        for fn in (ls -1 $path)
+        for fn in (command ls -1 $path)
             set -l f "$path/$fn"
             if test -x "$f"
                 set -gx "$fn" (eval $f)
@@ -78,7 +78,7 @@ function ev -d 'Load environment variables from directory'
       for evdir in $EVPATH
           set -l d "$evdir/$dname"
           if test -d "$d"
-              for fn in (ls -1 $d)
+              for fn in (command ls -1 $d)
                   echo $fn
                   set -e "$fn"
               end
