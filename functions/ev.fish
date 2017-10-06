@@ -1,100 +1,122 @@
-set -g DEFAULT_EVPATH ~/.config/env
+if set -q XDG_CONFIG_HOME
+    set config_dir $XDG_CONFIG_HOME
+else
+    set config_dir ~/.config/env
+end
+
+set -g DEFAULT_EVPATH $config_dir/env
 
 # Display general usage
 function __ev_usage
-  echo "EVPATH is $EVPATH"
-  echo 'Usage:'
-  echo ' ev DIR           # Load all environment variables from DIR'
-  echo ' ev FILE          # Load a single environment variable from a FILE'
-  echo ' ev -u DIR        # Unload all environment variables from DIR'
-  echo ' ev (-h | --help) # Show this message'
-  return 1
+    echo "\
+Load environment variables from files and directories, like envdir
+
+EVPATH=$EVPATH
+
+Usage:
+    ev [-q] PATH ...
+    ev [-q] -u PATH ...
+
+Options:
+  -q            No output
+  -u PATH       Unset environment variables in PATH
+  -h --help     Show this message
+"
 end
 
 function __ev_update_completions
-  set -q EVPATH ; or set -g EVPATH $DEFAULT_EVPATH
+    set -q EVPATH ; or set -g EVPATH $DEFAULT_EVPATH
 
-  complete -c ev -n '__fish_use_subcommand' -r -a '-u' -d 'Unset environment variables'
-  for evdir in $EVPATH
-    if test -d "$evdir"
-      for d in (command ls -1d $evdir/*)
-        complete -c ev -n 'test -d' -r -a (basename "$d")
-        for f in (command ls -1 $d)
-            complete -c ev -n 'test -f' -r -a "(basename $d)/$f"
+    complete -c ev -x -s h -l help -d 'help'
+    complete -c ev -s q -d 'quiet'
+    for evdir in $EVPATH
+        set parent (string replace -r "^$HOME" "~" -- "$evdir")
+        for f in (command ls --color=never -1 $evdir)
+            if test -d "$evdir/$f"
+                set f "$f/"
+            end
+            complete -c ev -a "$f" -d "$parent"
+            complete -c ev -s u -r -d 'unset' -a "$f" -d "$parent"
         end
-      end
     end
-  end
 end
 
-function __ev_load_path
+function __ev_expand_path
+    set -q EVPATH ; or set -g EVPATH $DEFAULT_EVPATH
     set -l path "$argv[1]"
+    if test -e "$path"
+        echo "$path"
+        return 0
+    else
+        for evdir in $EVPATH
+            set -l fp "$evdir/$path"
+            if test -e "$fp"
+                echo $fp
+                return 0
+            end
+        end
+    end
+    return 1
+end
+
+
+function __ev_handle_path
+    set -l quiet "$argv[1]"
+    set -l unset "$argv[2]"
+    set -l path "$argv[3]"
     if test -d "$path"
-        for fn in (command ls -1 $path)
-            __ev_load_path "$path/$fn"
+        for fn in (command ls --color=never -1 "$path")
+            __ev_handle_path $quiet $unset "$path/$fn"
         end
         return 0
     else if test -f "$path"
-        echo (basename $path)
-        if test -x "$path"
-            set -gx (basename $path) (eval $path)
+        set -l varname (basename $path)
+        if [ "$quiet" != "yes" ]
+            echo $varname
+        end
+        if [ "$unset" = "yes" ]
+            set -e "$varname"
+        else if test -x "$path"
+            set -gx $varname (eval "$path")
         else
-            set -gx (basename $path) (cat "$path")
+            set -gx $varname (cat "$path")
         end
         return 0
     end
     return 1
 end
 
-function ev -d 'Load environment variables from directory'
-  set -q EVPATH ; or set -g EVPATH $DEFAULT_EVPATH
+function ev -d 'Load environment variables from files and directories'
+    set -q EVPATH ; or set -g EVPATH $DEFAULT_EVPATH
 
-  if test (count $argv) -lt 1
-    __ev_usage
-    return 1
-  end
-
-  switch $argv[1]
-    case '-u'
-      if not test (count $argv) -eq 2
-        echo "Usage: ev -u DIR"
+    if test (count $argv) -lt 1
+        __ev_usage >&2
         return 1
-      end
-  end
+    end
 
-  switch $argv[1]
-    case -h --help
-      __ev_usage
-      return 0
+    set quiet no
+    set unset no
+    for opt in $argv
+        switch $opt
+            case -h --help
+                __ev_usage
+                return 0
+            case -q
+                set quiet yes
+            case -u
+                set unset yes
+            case '*'
+                set paths $paths $opt
+        end
+    end
 
-    case -u
-      set -l dname "$argv[2]"
-      for evdir in $EVPATH
-          set -l d "$evdir/$dname"
-          if test -d "$d"
-              for fn in (command ls -1 $d)
-                  echo $fn
-                  set -e "$fn"
-              end
-              break
-          end
-      end
+    for path in $paths
+        set expanded (__ev_expand_path $path)
+        and __ev_handle_path $quiet $unset "$expanded"
+        or begin
+            echo "ev: $path: No such file or directory" >&2
+            return 1
+        end
+    end
 
-
-    case '*'
-      set -l name "$argv[1]"
-      for evdir in $EVPATH
-          set -l path "$evdir/$name"
-          __ev_load_path "$path"
-          if test $status -eq 0
-              return 0
-          end
-      end
-      __ev_load_path "$name"
-      if test $status -eq 0
-          return 0
-      end
-      echo "$name not found."
-      return 1
-  end
 end
