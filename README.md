@@ -6,8 +6,8 @@ Load environment variables from directories and files.
 
 # Usage
 
-By default, `ev` looks for environment variable directories in `~/.config/env`,
-set `EVPATH` to change this. `EVPATH` can be a list of directories.
+By default, `ev` looks for environment variable directories in `$XDG_CONFIG_HOME/env`.  
+Set `EVPATH` to change this. `EVPATH` can also be a list of directories.
 
 ```
 $ ev -h
@@ -50,6 +50,8 @@ $ env | grep FOO
 $ env | grep BAR
 ```
 
+## Executables
+
 If a file is executable, `ev` will run the file and store the result.
 
 ```
@@ -64,6 +66,43 @@ $ ev IP
 IP
 $ env | grep IP
 IP=8.8.8.8
+```
+
+## Recursive
+
+`ev` will recursively add environment variables from subdirectories.
+
+```
+$ env | grep FOO
+$ env | grep BAR
+$ env | grep BAZ
+$ tree envvars/
+envvars/
+└── foo
+    ├── FOO
+    └── bar
+        ├── BAR
+        └── baz
+            └── BAZ
+
+3 directories, 3 files
+$ ev envvars
+FOO
+BAR
+BAZ
+$ env | grep FOO
+FOO=foo
+$ env | grep BAR
+BAR=bar
+$ env | grep BAZ
+BAZ=baz
+$ ev -u envvars
+FOO
+BAR
+BAZ
+$ env | grep FOO
+$ env | grep BAR
+$ env | grep BAZ
 ```
 
 # Installation
@@ -81,15 +120,6 @@ Add the following to `~/.config/fish/config.fish` and run `fundle install`.
 
 ```
 fundle plugin 'joehillen/ev-fish'
-```
-
-
-## Using [fundle](https://github.com/tuvistavie/fundle)
-
-Add the following to `~/.config/fish/config.fish` and run `fundle install`.
-
-```
-fundle plugin joehillen/ev-fish
 ```
 
 ## Manually

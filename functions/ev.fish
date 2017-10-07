@@ -24,6 +24,17 @@ Options:
 "
 end
 
+function __ev_print_paths
+    set r $argv[1]
+    set x (string match -r '.*/' $argv[2])
+    or set x ''
+    if not test -e $x; and test -e $r/$x
+        for f in (command ls --color=never -1p $r/$x)
+            echo $x$f
+        end
+    end
+end
+
 function __ev_update_completions
     set -q EVPATH ; or set -g EVPATH $DEFAULT_EVPATH
 
@@ -31,13 +42,8 @@ function __ev_update_completions
     complete -c ev -s q -d 'quiet'
     for evdir in $EVPATH
         set parent (string replace -r "^$HOME" "~" -- "$evdir")
-        for f in (command ls --color=never -1 $evdir)
-            if test -d "$evdir/$f"
-                set f "$f/"
-            end
-            complete -c ev -a "$f" -d "$parent"
-            complete -c ev -s u -r -d 'unset' -a "$f" -d "$parent"
-        end
+        complete -c ev -a "(__ev_print_paths $evdir (commandline -ct))" -d $parent
+        complete -c ev -s u -a "(__ev_print_paths $evdir (commandline -ct))" -d $parent
     end
 end
 
@@ -67,10 +73,15 @@ function __ev_handle_path
     if test -d "$path"
         for fn in (command ls --color=never -1 "$path")
             __ev_handle_path $quiet $unset "$path/$fn"
+            or return 1
         end
         return 0
     else if test -f "$path"
         set -l varname (basename $path)
+        if string match -qvr '^[a-zA-Z0-9_]+$' "$varname"
+            echo "ev: invalid variable name: $varname" >&2
+            return 1
+        end
         if [ "$quiet" != "yes" ]
             echo $varname
         end
@@ -112,11 +123,12 @@ function ev -d 'Load environment variables from files and directories'
 
     for path in $paths
         set expanded (__ev_expand_path $path)
-        and __ev_handle_path $quiet $unset "$expanded"
         or begin
             echo "ev: $path: No such file or directory" >&2
             return 1
         end
+        __ev_handle_path $quiet $unset "$expanded"
+        or return 1
     end
 
 end
