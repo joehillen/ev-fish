@@ -2,28 +2,27 @@
 
 [envdir](https://cr.yp.to/daemontools/envdir.html) for fish shell
 
-Load environment variables from directories and files.
+Load environment variables from files and directories.
 
 # Usage
 
-By default, `ev` looks for environment variable directories in `$XDG_CONFIG_HOME/env`.  
-Set `EVPATH` to change this. `EVPATH` can also be a list of directories.
-
 ```
 $ ev -h
-Load environment variables from files and directories, like envdir
-
-EVPATH=/home/joe/.config/env
-
 Usage:
-   ev [-q] PATH ...
-   ev [-q] -u PATH ...
+    ev [-q] PATH ...
+    ev [-q] -u PATH ...
 
 Options:
- -q            No output
- -u PATH       Unset environment variables in PATH
- -h --help     Show this message
+    -q            No output
+    -u PATH       Unset environment variables in PATH
+    -h --help     Show this message
+
+EVPATH=/home/joe/.config/env
+EVPATH is the directory or list of directories where ev will search.
+PATH can be a name of a file/directory in EVPATH or a path to a file/directory.
 ```
+
+By default, `EVPATH` is `$XDG_CONFIG_HOME/env`.
 
 ## Example
 

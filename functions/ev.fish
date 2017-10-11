@@ -9,18 +9,18 @@ set -g DEFAULT_EVPATH $config_dir/env
 # Display general usage
 function __ev_usage
     echo "\
-Load environment variables from files and directories, like envdir
-
-EVPATH=$EVPATH
-
 Usage:
     ev [-q] PATH ...
     ev [-q] -u PATH ...
 
 Options:
-  -q            No output
-  -u PATH       Unset environment variables in PATH
-  -h --help     Show this message
+    -q            No output
+    -u PATH       Unset environment variables in PATH
+    -h --help     Show this message
+
+EVPATH=$EVPATH
+EVPATH is the directory or list of directories where ev will search.
+PATH can be a name of a file/directory in EVPATH or a path to a file/directory.
 "
 end
 
