@@ -110,7 +110,7 @@ $ env | grep BAZ
 ## [fisherman](https://github.com/fisherman/fisherman) (recommended)
 
 ```
-fisher joehillen/to-fish
+fisher joehillen/ev-fish
 ```
 
 ## Using [fundle](https://github.com/tuvistavie/fundle)
