@@ -65,13 +65,23 @@ function __ev_expand_path
     return 1
 end
 
+function __ev_ls
+  set -l path $argv[1]
+  switch (uname)
+    case Darwin
+      command ls -1 "$path"
+    case '*'
+      command ls --color=never -1 "$path"
+  end
+end
+
 
 function __ev_handle_path
     set -l quiet "$argv[1]"
     set -l unset "$argv[2]"
     set -l path "$argv[3]"
     if test -d "$path"
-        for fn in (command ls --color=never -1 "$path")
+        for fn in (__ev_ls $path)
             __ev_handle_path $quiet $unset "$path/$fn"
             or return 1
         end
